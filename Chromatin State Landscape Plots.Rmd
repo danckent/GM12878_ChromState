@@ -1,0 +1,195 @@
+---
+title: "Chromatin State Landscape Plots"
+author: "Dan K"
+date: "06/10/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library( ggplot2)
+library( nucleR) 
+library( dplyr)
+```
+
+```{r}
+load("~/Data/GM12878/Chromatin State/Chrom_state_per_gene_for_PCA.RData")
+#add columns
+Gene_makeup_CS$H3K4me3_active <- Gene_makeup_CS$E10 + Gene_makeup_CS$E11
+Gene_makeup_CS$Heterochromatin <- (Gene_makeup_CS$E3 + Gene_makeup_CS$E5 + Gene_makeup_CS$E6)
+Gene_makeup_CS$Transcription_H3K36me3 <- Gene_makeup_CS$E1 + Gene_makeup_CS$E2
+Gene_makeup_CS$Enhancer <- Gene_makeup_CS$E8+Gene_makeup_CS$E9
+
+load("~/Data/GM12878/Chromatin State/Gene_makeup_CS_active.RData")
+#add columns
+Gene_makeup_CS_active$H3K4me3_active <- Gene_makeup_CS_active$E10 + Gene_makeup_CS_active$E11
+Gene_makeup_CS_active$Heterochromatin <- (Gene_makeup_CS_active$E3 + Gene_makeup_CS_active$E5 + Gene_makeup_CS_active$E6)
+Gene_makeup_CS_active$Transcription_H3K36me3 <- Gene_makeup_CS_active$E1 + Gene_makeup_CS_active$E2
+Gene_makeup_CS_active$Enhancer <- Gene_makeup_CS_active$E8+Gene_makeup_CS_active$E9
+
+load( "~/Data/GM12878/Chromatin State/Chrom_DNase_per_gene_for_PCA.RData")
+#add columns 
+Gene_DNase_Chrom$H3K4me3_active <- Gene_DNase_Chrom$E10 + Gene_DNase_Chrom$E11
+Gene_DNase_Chrom$Heterochromatin <- (Gene_DNase_Chrom$E3 + Gene_DNase_Chrom$E5 + Gene_DNase_Chrom$E6)
+Gene_DNase_Chrom$Transcription_H3K36me3 <- Gene_DNase_Chrom$E1 + Gene_DNase_Chrom$E2
+Gene_DNase_Chrom$Enhancer <- Gene_DNase_Chrom$E8+Gene_DNase_Chrom$E9
+
+load("~/Data/GM12878/Chromatin State/Gene_DNase_makeup_CS_active.RData")
+#add columns
+Gene_DNase_Chrom_active$H3K4me3_active <- Gene_DNase_Chrom_active$E10 + Gene_DNase_Chrom_active$E11
+Gene_DNase_Chrom_active$Heterochromatin <- (Gene_DNase_Chrom_active$E3 + Gene_DNase_Chrom_active$E5 + Gene_DNase_Chrom_active$E6)
+Gene_DNase_Chrom_active$Transcription_H3K36me3 <- Gene_DNase_Chrom_active$E1 + Gene_DNase_Chrom_active$E2
+Gene_DNase_Chrom_active$Enhancer <- Gene_DNase_Chrom_active$E8+Gene_DNase_Chrom_active$E9
+
+# plot histograms for the distribution of states across the genome 
+hist_E1 <- (Gene_makeup_CS[Gene_makeup_CS$E1 >0,])
+hist_E2 <- (Gene_makeup_CS[Gene_makeup_CS$E2 >0,])
+hist_E3 <- (Gene_makeup_CS[Gene_makeup_CS$E3 >0,])
+hist_E4 <- (Gene_makeup_CS[Gene_makeup_CS$E4 >0,])
+hist_E5 <- (Gene_makeup_CS[Gene_makeup_CS$E5 >0,])
+hist_E6 <- (Gene_makeup_CS[Gene_makeup_CS$E6 >0,])
+hist_E7 <- (Gene_makeup_CS[Gene_makeup_CS$E7 >0,])
+hist_E8 <- (Gene_makeup_CS[Gene_makeup_CS$E8 >0,])
+hist_E9 <- (Gene_makeup_CS[Gene_makeup_CS$E9 >0,])
+hist_E10 <- (Gene_makeup_CS[Gene_makeup_CS$E10 >0,])
+hist_E11 <- (Gene_makeup_CS[Gene_makeup_CS$E11 >0,])
+
+```
+
+```{r echo=FALSE}
+hist(hist_E1$E1)
+hist(hist_E2$E2)
+hist(hist_E3$E3)
+hist(hist_E4$E4)
+hist(hist_E5$E5)
+hist(hist_E6$E6)
+hist(hist_E7$E7)
+hist(hist_E8$E8)
+hist(hist_E9$E9)
+hist(hist_E10$E10)
+hist(hist_E11$E11)
+```
+
+```{r}
+#plot the H3K4me3 active states against the H3K36me3 states 
+
+ggplot(Gene_makeup_CS, aes(x=H3K4me3_active, y=Transcription_H3K36me3, alpha = width)) +
+  geom_point() +
+  geom_smooth(color="red", fill="#69b3a2", se=TRUE) 
+
+#plot the H3K4me3 active states against the H3K36me3 states FOR ACTIVE GENES 
+ggplot(Gene_makeup_CS_active, aes(x=H3K4me3_active, y=Transcription_H3K36me3, alpha = width)) +
+  geom_point() +
+  geom_smooth( color="red", fill="#69b3a2", se=TRUE)
+
+#plot the H3K4me3 active states against the enhnacer states 
+ggplot(Gene_makeup_CS_active, aes(x=H3K4me3_active, y= Enhancer, alpha = width)) +
+  geom_point() +
+  geom_smooth( color="red", fill="#69b3a2", se=TRUE)
+
+
+```
+
+
+```{r +DNase}
+#plot the H3K4me3 active states against the H3K36me3 states colour by width
+ggplot(Gene_DNase_Chrom_active, aes(y=H3K4me3_active, x=Transcription_H3K36me3, alpha = width)) +
+  geom_point() +
+  geom_smooth( color="red", fill="#69b3a2", se=TRUE)
+
+#plot the H3K4me3 active states against the H3K36me3 states fill by DNase
+Gene_DNase_Chrom_active %>%     
+  ggplot(aes(x = H3K4me3_active, y = Transcription_H3K36me3, alpha = DNase)) +
+  geom_point() + 
+  geom_smooth( color="red", fill="#69b3a2", se=TRUE)
+
+#plot the H3K4me3 active states against the enhnacer states 
+ggplot(Gene_DNase_Chrom_active, aes(x=H3K4me3_active, y= Enhancer, alpha = DNase)) +
+  geom_point() +
+  geom_smooth( color="red", fill="#69b3a2", se=TRUE)
+  
+#plot the H3K4me3 active & enhnacer states against elongation states
+ggplot(Gene_DNase_Chrom_active, aes(x=H3K4me3_active+Enhancer, y=Transcription_H3K36me3, alpha = DNase)) +
+  geom_point() 
+
+#DNase against the polycomb K27me3
+ggplot(Gene_DNase_Chrom, aes(x=DNase, y=E5+E6)) +
+  geom_point() #+
+ # geom_smooth( color="red", fill="#69b3a2", se=TRUE, method = "loess")
+
+
+#DNase against theH3K4me3
+ggplot(Gene_DNase_Chrom, aes(x=DNase, y=E10+E11)) +
+  geom_point() +
+  geom_smooth( color="red", fill="#69b3a2", se=TRUE)
+
+cor.test(Gene_DNase_Chrom$DNase, (Gene_DNase_Chrom$E10+Gene_DNase_Chrom$E11), method = "pearson")
+
+# Pearson's product-moment correlation
+# 
+# data:  Gene_DNase_Chrom$DNase and (Gene_DNase_Chrom$E10 + Gene_DNase_Chrom$E11)
+# t = 100.64, df = 13451, p-value < 2.2e-16
+# alternative hypothesis: true correlation is not equal to 0
+# 95 percent confidence interval:
+#  0.6456401 0.6649224
+# sample estimates:
+#      cor 
+# 0.655388 
+```
+
+```{r}
+#plot the H3K4me3 states against the H3K36me3 states but only for those genes with a 10% & 20% coverage of DNase 
+
+ten_perc_DC <- (Gene_makeup_CS_active[Gene_makeup_CS_active$DNase>=.1,])
+ten_perc_DC$width <- ten_perc_DC$end - ten_perc_DC$start 
+ten_perc_DC %>% 
+  arrange(desc(width))
+
+twenty_perc_DC <- (Gene_makeup_CS_active[Gene_makeup_CS_active$DNase>=.2,])
+```
+
+```{r}
+ggplot(twenty_perc_DC, aes(x=H3K4me3_active, y=Transcription_H3K36me3, colour = width)) +
+  geom_point() +
+  geom_smooth(color="pink", fill="grey", se=TRUE)+
+  scale_colour_gradient2()+
+  theme_grey()
+```
+
+```{r}
+# export the top 20 
+
+twenty_perc_DC <- makeGRangesFromDataFrame(twenty_perc_DC[1:3], ignore.strand = TRUE)
+ten_perc_DC <- makeGRangesFromDataFrame(ten_perc_DC, ignore.strand = TRUE, keep.extra.columns = TRUE)
+export.bed(twenty_perc_DC,name = "GM12878_>20%_DNase", filepath = "~/Data/GM12878/GM12878_>20%_DNase_IVG", splitByChrom = FALSE)
+
+export.bed(ten_perc_DC,name = "GM12878_>10%_DNase", filepath = "~/Data/GM12878/GM12878_>10%_DNase_IVG", splitByChrom = FALSE)
+```
+``` {r}
+#### H3K4me3 categories ####
+
+Gene_DNase_Chrom <- Gene_DNase_Chrom %>% 
+  mutate(H3K4me3_Group = case_when(H3K4me3_active <= 0.01271 ~ "First_Quartile",
+                                   H3K4me3_active > 0.01271 & H3K4me3_active <= 0.05372 ~ "Median", 
+                                   H3K4me3_active > 0.05372 & H3K4me3_active <= 0.13323 ~ "Third_Quartile",
+                                   H3K4me3_active > 0.13323  ~ "Final_Quartile")) %>% 
+  arrange(desc(H3K4me3_Group, by_group = TRUE))
+```
+
+```{r}
+ggplot(Gene_DNase_Chrom, aes(x=factor(H3K4me3_Group), y=DNase)) +
+  geom_boxplot() +
+  xlab("H3K4me3 chromatin states grouped by % coverage")+
+  ylab("DNase accessability")
+```
+
+
+```{r}
+
+
+
+```
+
